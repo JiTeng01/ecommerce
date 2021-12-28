@@ -1,0 +1,1 @@
+from api.account.serializers.serializers import AccountProfileSerializer

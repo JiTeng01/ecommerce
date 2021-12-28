@@ -1,0 +1,1 @@
+from epanel.constants.product.urls import ProductAPIURL
