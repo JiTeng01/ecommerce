@@ -1,10 +1,10 @@
 from toolbox.api.serializers.serializers import serializers, BaseAPIModelSerializer, BaseSelectAPIModelSerializer
-# from epanel.constants.product import ProductURL
 from product.models import Product
 
 
 class ProductSerializer(BaseAPIModelSerializer):
 
+    id = serializers.SerializerMethodField()
     code = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
@@ -15,7 +15,10 @@ class ProductSerializer(BaseAPIModelSerializer):
 
     class Meta:
         model = Product
-        fields = ("code", "name", "image", "price", "description", "discount")
+        fields = ("id", "code", "name", "image_url", "thumbnail_url", "price", "description", "discount")
+    
+    def get_id(self, obj):
+        return obj.id
 
     def get_code(self, obj):
         return obj.code
@@ -45,7 +48,7 @@ class ProductListSerializer(ProductSerializer):
 
     class Meta:
         model = Product
-        fields = ("code", "name", "image", "price", "edit_url")
+        fields = ("id", "code", "name", "image", "price", "edit_url")
 
     def get_edit_url(self, obj):
         return ""

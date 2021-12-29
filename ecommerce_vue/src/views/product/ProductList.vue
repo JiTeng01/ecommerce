@@ -30,14 +30,14 @@
                                 </td>
                                 <td class="text-center text-xs-center text-sm-center text-md-center text-lg-center text-xl-center" v-text="item.price"></td>
                                 <td class="text-center text-xs-center text-sm-center text-md-center text-lg-center text-xl-center">
-                                    <v-menu bottom offset-y v-if="hasMenu(item)">
+                                    <v-menu bottom offset-y>
                                         <template v-slot:activator="{ on, attrs }">
                                             <v-btn icon v-bind="attrs" v-on="on">
                                                 <v-icon>mdi-dots-vertical</v-icon>
                                             </v-btn>
                                         </template>
                                         <v-list dense>
-                                            <v-list-item v-if="item.details_url">
+                                            <v-list-item :to="getEditUrl(item.id)">
                                                 <v-list-item-title>Edit Product</v-list-item-title>
                                             </v-list-item>
                                         </v-list>
@@ -131,8 +131,8 @@ export default {
             this.editDialog.open();
         },
 
-        hasMenu: function(item) {
-            return item.details_url || item.password_url || item.permission_url;
+        getEditUrl: function(id) {
+            return 'products/' + id + '/edit'
         }
     },
 

@@ -3,6 +3,6 @@ from api.product import views
 
 
 urlpatterns = [
-    # path('<int:pk>/', views.AdminUpdateDestroyAPIView.as_view(), name="details"),
+    path("<int:pk>/", views.ProductRetrieveUpdateAPIView.as_view(), name="details"),
     path('', views.ProductListCreateAPIView.as_view(), name="list"),
 ]

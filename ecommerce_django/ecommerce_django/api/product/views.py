@@ -2,8 +2,8 @@ from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveAPIView,
 from rest_framework.response import Response
 from toolbox.api.permissions import IsLoggedInPermission, IsTokenExistPermission
 from toolbox.api.responses import success_response, error_response
-from api.product.forms import ProductListForm, ProductCreateForm
-from api.product.serializers import ProductHeader, ProductListSerializer
+from api.product.forms import ProductListForm, ProductCreateForm, ProductRetrieveForm, ProductUpdateForm
+from api.product.serializers import ProductHeader, ProductListSerializer, ProductSerializer
 
 
 class ProductListCreateAPIView(ListAPIView, CreateAPIView):
@@ -27,6 +27,40 @@ class ProductListCreateAPIView(ListAPIView, CreateAPIView):
         if form.is_valid():
             form.save()
             response = success_response(dict(message=form.get_success_message()))
+        else:
+            response = error_response(dict(errors=form.errors, message=form.get_error_message()))
+
+        return Response(response)
+
+class ProductRetrieveUpdateAPIView(RetrieveAPIView, UpdateAPIView):
+    serializer_class = ProductSerializer
+    permission_classes = (IsLoggedInPermission, IsTokenExistPermission)
+
+    def get_request_data(self):
+        request_data = dict(instance=self.kwargs.get(self.lookup_field))
+
+        if self.request.method == "PUT":
+            fields = ["name", "price", "description", "discount", "image"]
+            for field in fields:
+                request_data[field] = self.request.data.get(field, "")
+
+        return request_data
+
+    def retrieve(self, request, *args, **kwargs):
+        form, header = ProductRetrieveForm(self.get_request_data(), request=request), ProductHeader()
+        if form.is_valid():
+            serializer = self.get_serializer(form.get_object())
+            response = success_response(dict(object=serializer.data))
+        else:
+            response = error_response(dict(object=dict()))
+
+        return Response(response)
+
+    def update(self, request, *args, **kwargs):
+        form = ProductUpdateForm(self.get_request_data(), request=request)
+        if form.is_valid():
+            serializer = self.get_serializer(form.save())
+            response = success_response(dict(object=serializer.data, message=form.get_success_message()))
         else:
             response = error_response(dict(errors=form.errors, message=form.get_error_message()))
 

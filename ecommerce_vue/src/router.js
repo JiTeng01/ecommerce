@@ -45,6 +45,20 @@ export default new Router({
                     },
                     meta: { auth: true, page_title: 'Product Managment' },
                 },
+                {
+                    name: 'product information',
+                    path: 'products/:id/edit',
+                    component: () => import('@/views/product/ProductEdit'),
+                    beforeEnter: (to, form, next) => {
+                        if(!VueCookie.get('accesstoken')){
+                            next("/")
+                        }
+                        else{
+                            next()
+                        }
+                    },
+                    meta: { auth: true, page_title: 'Product Edit' },
+                }
                
             ]
         },

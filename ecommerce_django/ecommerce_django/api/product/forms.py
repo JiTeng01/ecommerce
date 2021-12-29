@@ -99,3 +99,71 @@ class ProductCreateForm(forms.Form):
 
     def get_error_message(self):
         return ADD_ERROR
+
+class ProductRetrieveForm(forms.Form):
+
+    instance = forms.ModelChoiceField(queryset=Product.objects.get_all(), required=True)
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        super(ProductRetrieveForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        super(ProductRetrieveForm, self).clean()
+        self.instance = self.cleaned_data.get("instance")
+
+    def get_object(self):
+        return self.instance
+
+class ProductUpdateForm(forms.Form):
+
+    instance = forms.ModelChoiceField(queryset=Product.objects.get_all(), required=True)
+    name = forms.CharField(required=True)
+    price = forms.FloatField(required=True)
+    description = forms.CharField(required=True)
+    discount = forms.IntegerField(required=False)
+    image = forms.CharField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        super(ProductUpdateForm, self).__init__(*args, **kwargs)
+        self.image_format, self.image_binary, self.extension = None, None, None
+
+    def clean_image(self):
+        image = self.cleaned_data.get('image', "")
+        if image:
+            self.image_format, self.image_binary = image.split(';base64,')
+            self.extension = self.image_format.split('/')[-1]
+        return image
+
+    def clean(self):
+        super(ProductUpdateForm, self).clean()
+        self.instance = self.cleaned_data.get("instance")
+        self.name = self.cleaned_data.get("name", None)
+        self.description = self.cleaned_data.get("description", None)
+        self.discount = self.cleaned_data.get("discount", None)
+        self.price = self.cleaned_data.get("price", None)
+
+    def save(self):
+        self.instance.name = self.name
+        self.instance.description = self.description
+        self.instance.price = self.price
+        self.instance.discount = self.discount
+        if self.image_binary:
+            self.instance.delete_images()
+            image = ContentFile(base64_decode_raw(self.image_binary.encode('utf-8')), name=self.get_file_name())
+            self.instance.image = image
+
+        self.instance.save()
+
+        return self.instance
+    
+    def get_file_name(self):
+        file_name = stringify_datetime(now(), datetime_format=DateTimeFormatter.DEFAULT_FORMAT)
+        return "{0}.{1}".format(file_name, self.extension)
+    
+    def get_success_message(self):
+        return "The product has been successfully updated"
+
+    def get_error_message(self):
+        return "Failed to update the product info"
